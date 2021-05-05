@@ -56,6 +56,8 @@
                 document.getElementById("myCanvas").getContext("2d").fillStyle = "#800000"; //แดง
             }else if(this.special == 8){
                 document.getElementById("myCanvas").getContext("2d").fillStyle = "#191970"; //น้ำเงิน
+            }else if(this.special == 7){
+                document.getElementById("myCanvas").getContext("2d").fillStyle = "#8B008B"; //ม่วง
             }else{
                 document.getElementById("myCanvas").getContext("2d").fillStyle = "#0095DD";
             }
@@ -127,7 +129,9 @@
             this.score = 0; 
             var _this = this;
             this.interval = setInterval(function () { _this.update(); },10); //ตั้งเวลาโลกอัพเดต  
-
+            this.setBall = []
+            this.setBall.push(new Ball(this.canvas.width/2,this.canvas.height/2))
+            
             for(var c =0; c<this.column;c++){//สร้าง brick ตามแถวและคอลัมน์
                 this.brick[c] = [];
                 for(var r=0; r<this.row;r++){
@@ -158,38 +162,42 @@
         }
         update(){//อัพเดตโลก
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ball.draw();
-            this.ball.move();
+            
             this.paddle.draw();
             this.drawBricks();
-            this.collisionDetection();
             this.drawScore();
             this.drawLives();
 
-            if(this.ball.x + this.ball.speedX > this.canvas.width-this.ball.Radius || this.ball.x + this.ball.speedX  < this.ball.Radius) {//ตรวจสอบการชนระหว่างลูกบอลกับกำแพงขอบข้าง
-                this.ball.bounceX();
-            }
-            if(this.ball.y + this.ball.speedY < this.ball.Radius) {//ตรวจสอบการชนระหว่างลูกบอลกับกำแพงขอบบน
-                this.ball.bounceY();
-            }else if(this.ball.y + this.ball.speedY > this.canvas.height-this.ball.Radius){//ถ้าลูกบอลถูกรับโดย Paddle
-                if( this.ball.x > this.paddle.paddleX && this.ball.x < this.paddle.paddleX + this.paddle.paddleWidth){
-                    this.ball.bounceY();
-                }else{//ถ้ารับลูกบอลไม่ได้
-                    this.live --;//พลังชีวิตหาย
-                    if(this.live === 0){//ถ้าพลังชีวิตหมด
-                        alert("GAME OVER");
-                        document.location.reload();
-                        clearInterval(this.interval); // Needed for Chrome to end game
-                    }else{//นำพลังชีวิตมาสร้างโลกใหม่
-                        this.ball.x = this.canvas.width/2;
-                        this.ball.y = this.canvas.height/2;
-                        this.ball.speedX = 2;
-                        this.ball.speedY = -2;
-                        this.paddle.paddleX = (this.canvas.width-this.paddle.paddleWidth)/2;
-                    }
-                    
+            for(let i = 0; i< this.setBall.length; i++){
+                this.ball = this.setBall[i]
+                this.collisionDetection();
+                this.ball.draw();
+                this.ball.move();
+                if(this.ball.x + this.ball.speedX > this.canvas.width-this.ball.Radius || this.ball.x + this.ball.speedX  < this.ball.Radius) {//ตรวจสอบการชนระหว่างลูกบอลกับกำแพงขอบข้าง
+                    this.ball.bounceX();
                 }
+                if(this.ball.y + this.ball.speedY < this.ball.Radius) {//ตรวจสอบการชนระหว่างลูกบอลกับกำแพงขอบบน
+                    this.ball.bounceY();
+                }else if(this.ball.y + this.ball.speedY > this.canvas.height-this.ball.Radius){//ถ้าลูกบอลถูกรับโดย Paddle
+                    if( this.ball.x > this.paddle.paddleX && this.ball.x < this.paddle.paddleX + this.paddle.paddleWidth){
+                        this.ball.bounceY();
+                    }else{//ถ้ารับลูกบอลไม่ได้
+                        this.live --;//พลังชีวิตหาย
+                        if(this.live === 0){//ถ้าพลังชีวิตหมด
+                            alert("GAME OVER");
+                            document.location.reload();
+                            clearInterval(this.interval); // Needed for Chrome to end game
+                        }else{//นำพลังชีวิตมาสร้างโลกใหม่
+                            this.ball.x = this.canvas.width/2;
+                            this.ball.y = this.canvas.height/2;
+                            this.ball.speedX = 2;
+                            this.ball.speedY = -2;
+                            this.paddle.paddleX = (this.canvas.width-this.paddle.paddleWidth)/2;
+                        }
+                    
+                    }
 
+                }
             }
         }
         collisionDetection(){//ตรวจสอบว่าลูกบอลชนกับกำแพง
@@ -203,6 +211,8 @@
                                 this.paddle.paddleWidth = this.paddle.paddleWidth/2
                             }else if(this.brickBlock.special == 8){
                                 this.paddle.paddleWidth = this.paddle.paddleWidth*2
+                            }else if(this.brickBlock.special == 7){
+                                this.setBall.push(new Ball(this.canvas.width/2,this.canvas.height/2))
                             }
                             this.ball.speedY = -this.ball.speedY;
                             this.brickBlock.status = 0;//กำแพงหายไป
